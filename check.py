@@ -10,8 +10,6 @@ import requests
 
 API_CANDIDATES = [
     "https://api.logement-actionlogement.fr/api/v1/demands/public/offers-overview",
-    "https://api.logement-actionlogement.fr/api/v1/public/offers-overview",
-    "https://api.logement-actionlogement.fr/api/v1/demands/offers-overview",
 ]
 SEARCH_URL = "https://logement-actionlogement.fr/search"
 SEEN_FILE = Path(__file__).parent / "seen.json"
@@ -19,17 +17,17 @@ SEEN_FILE = Path(__file__).parent / "seen.json"
 # Criteres de recherche (copies depuis la requete du site)
 PAYLOAD = {
     "municipalities": [
-        {"code": "91225", "postcode": "91450"},  # Etiolles
-        {"code": "91174", "postcode": "91100"},  # Corbeil-Essonnes
-        {"code": "91340", "postcode": "91090"},  # Lisses
-        {"code": "91521", "postcode": "91130"},  # Ris-Orangis
-        {"code": "91617", "postcode": "91250"},  # Tigery
         {"code": "91228", "postcode": "91000"},  # Evry-Courcouronnes
+        {"code": "91386", "postcode": "91540"},  # Mennecy
+        {"code": "91174", "postcode": "91100"},  # Corbeil-Essonnes
+        {"code": "91617", "postcode": "91250"},  # Tigery
+        {"code": "91521", "postcode": "91130"},  # Ris-Orangis
+        {"code": "91687", "postcode": "91170"},  # Viry-Chatillon
     ],
     "searchRadiusInKm": 5,
-    "typologyCodes": [],
-    "productGuids": [],
-    "offerCategories": [],
+    "maxRent": 950,
+    "typologyCodes": ["T2"],
+    "productGuids": ["712f4424-7590-4912-8ed8-f192b26557f8"],
 }
 
 # Filtres optionnels cote script (None = desactive)
