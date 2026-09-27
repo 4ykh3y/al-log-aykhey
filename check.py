@@ -8,7 +8,11 @@ from pathlib import Path
 
 import requests
 
-API = "https://api.logement-actionlogement.fr/api/v1/demands/offers-overview"
+API_CANDIDATES = [
+    "https://api.logement-actionlogement.fr/api/v1/demands/public/offers-overview",
+    "https://api.logement-actionlogement.fr/api/v1/public/offers-overview",
+    "https://api.logement-actionlogement.fr/api/v1/demands/offers-overview",
+]
 SEARCH_URL = "https://logement-actionlogement.fr/search"
 SEEN_FILE = Path(__file__).parent / "seen.json"
 
@@ -63,15 +67,32 @@ def notify(title: str, body: str, url: str = SEARCH_URL) -> None:
             s.send_message(msg)
 
 
+def find_api() -> str:
+    """Teste les URL candidates et retourne la premiere qui repond sans connexion."""
+    statuses = []
+    for url in API_CANDIDATES:
+        try:
+            r = requests.post(url, params={"size": 1, "page": 0},
+                              json=PAYLOAD, headers=HEADERS, timeout=30)
+        except requests.RequestException as e:
+            statuses.append(f"{url.split('/api/v1/')[1]} -> erreur {e.__class__.__name__}")
+            continue
+        statuses.append(f"{url.split('/api/v1/')[1]} -> {r.status_code}")
+        if r.ok:
+            print("API utilisee :", url)
+            return url
+    detail = "\n".join(statuses)
+    notify("Alerte Action Logement : acces refuse",
+           f"Aucune URL publique ne repond :\n{detail}")
+    sys.exit("Aucune URL exploitable :\n" + detail)
+
+
 def fetch_all() -> list[dict]:
+    api = find_api()
     offers, page = [], 0
     while True:
-        r = requests.post(API, params={"size": 20, "page": page},
+        r = requests.post(api, params={"size": 20, "page": page},
                           json=PAYLOAD, headers=HEADERS, timeout=30)
-        if r.status_code in (401, 403):
-            notify("Alerte Action Logement : acces refuse",
-                   f"L'API renvoie {r.status_code} sans connexion. Le script doit etre adapte.")
-            sys.exit(f"Acces refuse ({r.status_code}) : {r.text[:300]}")
         r.raise_for_status()
         data = r.json()
         items = extract_items(data)
